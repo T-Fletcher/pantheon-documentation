@@ -12,7 +12,7 @@ product: [secrets]
 integration: [--]
 tags: [reference, cli, local, terminus, workflow]
 permalink: docs/guides/secrets/composer
-reviewed: "2024-08-22"
+reviewed: "2025-08-27"
 showtoc: true
 ---
 
@@ -21,11 +21,19 @@ showtoc: true
 ### Mechanism 1: OAuth composer authentication (recommended)
 If your Composer-based dependency is private, and the repository supports OAuth authentication, storing your token as a secret in the Pantheon Secrets API is a simpler way to allow access to those private repositories.
 
+This method also allows Pantheon workflows to avoid GitHub's rate limiter when installing _public_ dependencies. The rate limiter can kick in when spinning up Multidev environments or frequently running Autopilot.
+
+Ensure you have installed the [Terminus Secret Manager Plugin](https://docs.pantheon.io/guides/secrets#access--availability) before proceeding, or you'll see an error similar to this when running the commands:
+
+```bash
+There are no commands defined in the "secret:site" namespace.
+```
+
 <TabList>
 
 <Tab title="GitHub" id="github-setup" active={true}>
 
-1. [Generate a GitHub token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token). The GitHub token must have all "repo" permissions selected.
+1. [Generate a GitHub token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token). The GitHub Personal Access Token (PAT) must have all "repo" permissions selected.
 
     **Note:** Check the repo box that selects all child boxes. **Do not** check all child boxes individually as this does not set the correct permissions.
 
@@ -35,7 +43,8 @@ If your Composer-based dependency is private, and the repository supports OAuth 
 
    ```bash{promptUser: user}
    terminus secret:site:set <site> github-oauth.github.com <github_token> --type=composer --scope=ic
-   ```
+   ```   
+   _If you only added a PAT to avoid GitHub's rate limiter, you can stop here_.
 
 1. Add your private repository to the `repositories` section of `composer.json`:
 
